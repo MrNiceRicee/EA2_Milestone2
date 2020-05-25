@@ -60,21 +60,57 @@ namespace Minesweeper
             }
         }
 
-        public int checkNeighbor(Cell[,] cells, Cell current, int distance)
+        public int checkNeighbor(Cell current, int distance)
         {
-            List<Cell> listofcells = cells.Cast<Cell>().ToList();
+            List<Cell> listofcells = this.Grid.Cast<Cell>().ToList();
             int x = current.Row;
             int y = current.Column;
             //convert to list
             var nearbycells = listofcells.Where(cell => cell.Row >= (x - distance) && cell.Row <= (x + distance)
                                                  && cell.Column >= (y - distance) && cell.Column <= (y + distance)
-                                                 && cell.Live == true);
+                                                 && cell.Live==true);
             //lambda code to see which cells are live around the current cell
             var currentcell = listofcells.Where(cell => cell.Row == x && cell.Row == y);
 
             nearbycells.Except(currentcell).ToList();
             return nearbycells.Count();
         }
+
+        public List<Cell> getNeighbors(Cell current, int distance)
+        {
+            List<Cell> listofcells = this.Grid.Cast<Cell>().ToList();
+            int x = current.Row;
+            int y = current.Column;
+            var nearbycells = listofcells.Where(cell => cell.Row >= (x - distance) && cell.Row <= (x + distance)
+                                     && cell.Column >= (y - distance) && cell.Column <= (y + distance));
+            //lambda code to see which cells are live around the current cell
+            var currentcell = listofcells.Where(cell => cell.Row == x && cell.Row == y);
+
+            return nearbycells.Except(currentcell).ToList();
+        }
+
+        public void revealNearbyZero(Cell current)
+        {
+            var nearCells = getNeighbors(current, 1).Where(cell => !cell.Visited);
+            foreach (var cell in nearCells)
+            {
+                if (!cell.Live)
+                {
+                    cell.Visited = true;
+                    cell.LiveNeighbors = checkNeighbor(cell, 1);
+                    if (cell.LiveNeighbors == 0)
+                    {
+                        revealNearbyZero(cell);
+                    }
+                }
+            }
+        }
+
+        public List<Cell> getCells()
+        {
+            return this.Grid.Cast<Cell>().ToList();
+        }
+
 
     }
 }
